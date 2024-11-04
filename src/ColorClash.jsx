@@ -1,26 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Column from './components/Column';
 
 const ColorClash = () => {
     const columns = 5;
     const slotsPerColumn = 6;
     const colors = ['red', 'blue', 'yellow', 'green', 'purple'];
+    const totalBalls = columns * (slotsPerColumn - 1);
 
-   
-    const [tubes, setTubes] = useState(
-        colors.map(color => Array(slotsPerColumn - 1).fill(color).concat([null]))
-    );
+
+    const initializeRandomTubes = () => {
+        let ballColors = [];
+        colors.forEach(color => ballColors.push(...Array(5).fill(color)));
+        ballColors = ballColors.sort(() => Math.random() - 0.5);
+
+        const tubes = Array.from({ length: columns }, (_, col) =>
+            [null, ...ballColors.slice(col * (slotsPerColumn - 1), (col + 1) * (slotsPerColumn - 1))]
+        );
+
+        return tubes;
+    };
+
+    const [tubes, setTubes] = useState(initializeRandomTubes);
     const [floatingBall, setFloatingBall] = useState(null);
+    const [score, setScore] = useState(0);
 
     const handleBallClick = (colIndex) => {
-      
-        const topIndex = tubes[colIndex].lastIndexOf(null) - 1;
-
-        if (topIndex >= 0 && !floatingBall) {  
+        const topIndex = tubes[colIndex].findIndex(color => color !== null);
+        if (topIndex !== -1 && !floatingBall) {
             const color = tubes[colIndex][topIndex];
             setFloatingBall({ color, fromCol: colIndex });
 
-            
+
             setTubes(prev => {
                 const newTubes = prev.map((col, index) => [...col]);
                 newTubes[colIndex][topIndex] = null;
@@ -31,42 +41,61 @@ const ColorClash = () => {
 
     const handleDrop = (targetColIndex) => {
         if (floatingBall) {
-            
-            const targetTopIndex = tubes[targetColIndex].lastIndexOf(null);
+            const emptyIndex = tubes[targetColIndex].lastIndexOf(null);
 
-            if (targetTopIndex >= 0) {
-                const targetColor = targetTopIndex < slotsPerColumn - 1 ? tubes[targetColIndex][targetTopIndex + 1] : null;
+            if (emptyIndex !== -1) {
+                const targetTopColor = emptyIndex > 0
+                    ? tubes[targetColIndex][emptyIndex - 1]
+                    : null;
 
-                if (!targetColor || targetColor === floatingBall.color) {
+                if (!targetTopColor || targetTopColor === floatingBall.color) {
                     setTubes(prev => {
                         const newTubes = prev.map((col, index) => [...col]);
-                        newTubes[targetColIndex][targetTopIndex] = floatingBall.color;
+                        newTubes[targetColIndex][emptyIndex] = floatingBall.color;
                         return newTubes;
                     });
-                    setFloatingBall(null); 
+                    setFloatingBall(null);
+                    checkCompletion(targetColIndex);
                 }
             }
         }
     };
 
+    const checkCompletion = (colIndex) => {
+        const column = tubes[colIndex];
+        const color = column[1];
+
+        if (color && column.slice(1).every(ball => ball === color)) {
+            setScore(prevScore => prevScore + 20);
+        }
+    };
+
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-900">
-            <div className="flex gap-8">
-                {tubes.map((column, colIndex) => (
-                    <Column
-                        key={colIndex}
-                        slots={column}
-                        onBallClick={() => handleBallClick(colIndex)}
-                        onDrop={() => handleDrop(colIndex)}
-                    />
-                ))}
+        <>
+            <div className="flex justify-center items-center h-screen bg-gray-900">
+                <div className="absolute top-4 right-4 text-white text-xl">Score: {score}</div>
+                <div className="flex gap-8">
+                    {tubes.map((column, colIndex) => (
+                        <Column
+                            key={colIndex}
+                            slots={column}
+                            onBallClick={() => handleBallClick(colIndex)}
+                            onDrop={() => handleDrop(colIndex)}
+                        />
+                    ))}
+                </div>
+                 <div className="absolute  text-white text-xl">Reshuffle</div>
+                {/* <div className='px-6 py-8 bg-slate-100/50 rounded-md flex justify-center items-center w-16 h-6'>
+                        Reshuffle
+                    </div> */}
+                {floatingBall && (
+                    <div
+                        className={`absolute top-20 w-12 h-12 rounded-full ${getColorClass(floatingBall.color)} shadow-lg`}
+                    ></div>
+                )}
             </div>
-            {floatingBall && (
-                <div
-                    className={`absolute top-20 w-12 h-12 rounded-full ${getColorClass(floatingBall.color)} shadow-lg`}
-                ></div>
-            )}
-        </div>
+
+        </>
     );
 };
 
