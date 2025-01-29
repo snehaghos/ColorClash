@@ -42,7 +42,7 @@ const ColorClash = () => {
         if (topIndex !== -1 && !floatingBall) {
             const color = tubes[colIndex][topIndex];
             setFloatingBall({ color, fromCol: colIndex });
-
+    
             setTubes(prev => {
                 const newTubes = prev.map((col, index) => [...col]);
                 newTubes[colIndex][topIndex] = null;
@@ -50,6 +50,7 @@ const ColorClash = () => {
             });
         }
     };
+    
 
     const handleDrop = (targetColIndex) => {
         if (floatingBall) {
@@ -119,10 +120,10 @@ const ColorClash = () => {
 
     return (
         <>
-            <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-800 to-gray-900">
-                <div className="absolute top-4 right-4 text-white text-xl">Score: {score}</div>
+            <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-800 to-gray-900 font-luckiestGuy">
+                <div className="absolute top-4 right-4 my-12 mx-6 text-white text-xl">Score: {score}</div>
                 {isPlayingWithTimer && (
-                    <div className="absolute top-4 left-4 text-white text-xl bg-gray-700 p-2 rounded">
+                    <div className="absolute top-4 left-4 text-white text-xl mx-6 bg-gray-700 p-2 my-12 rounded ">
                         Timer: {timer}s
                     </div>
                 )}
@@ -139,13 +140,16 @@ const ColorClash = () => {
                 </div>
 
                 {floatingBall && (
-                    <motion.div
-                        className={`absolute top-20 w-12 h-12 rounded-full ${getColorClass(floatingBall.color)} shadow-lg`}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                    ></motion.div>
-                )}
+    <motion.div
+        className={`absolute top-16 w-12 h-12 rounded-full ${getColorClass(floatingBall.color)} shadow-lg`}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -20, opacity: 0 }}
+        transition={{ duration: 0.5, yoyo: Infinity }}
+        style={{ left: '50%', transform: 'translateX(-50%)' }}
+    ></motion.div>
+)}
+
 
                 {showPlayModal && (
                     <motion.div
@@ -174,7 +178,7 @@ const ColorClash = () => {
 
                 {gameOver && (
                     <motion.div
-                        className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60"
+                        className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 font-luckiestGuy"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5 }}
@@ -186,7 +190,7 @@ const ColorClash = () => {
                             >
                                 ✖
                             </button>
-                            <h2 className="text-xl font-bold mb-4">Game Over</h2>
+                            <h2 className="text-6xl font-luckiestGuy font-bold mb-4">Game Over</h2>
                             <p className="text-lg">Your score: {score}</p>
                             <p>Time played: {isPlayingWithTimer ? `${60 - timer}s` : 'N/A'}</p>
                             <button
