@@ -1,11 +1,11 @@
-import React from 'react';
-import Slot from './Slot';
-import './colorClash.css'
+import Slot from "./Slot";
 
-function Column({ slots, onBallClick, onDrop }) {
+export default function Column({ slots, onBallClick, onDrop }) {
   const filledSlots = slots.filter(color => color !== null).length;
   const totalSlots = slots.length;
-  const waterHeight = (filledSlots / totalSlots) * 100; 
+  const waterHeight = (filledSlots / totalSlots) * 100;
+
+  const topBallIndex = slots.findIndex(color => color !== null);
 
   return (
     <div
@@ -20,11 +20,14 @@ function Column({ slots, onBallClick, onDrop }) {
         <Slot
           key={slotIndex}
           color={color}
-          onClick={() => slotIndex === slots.findIndex(slot => slot !== null) && color && onBallClick()}
+          onClick={() => {
+            if (slotIndex === topBallIndex && color) {
+              onBallClick();
+            }
+          }}
         />
       ))}
     </div>
   );
 }
 
-export default Column;
